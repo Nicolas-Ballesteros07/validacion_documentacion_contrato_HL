@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validación de Documentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --azul-oscuro:   #162b47;
+        --azul-oscuro-2: #0f2038;
+        --azul-medio:    #105788;
+        --rojo:          #e51148;
+        --rojo-dark:     #c50e3d;
+        --gris:          #e0e5e5;
+        --blanco:        #ffffff;
+        --negro:         #000000;
+        --color-bg: #f4f6f7;
+        --color-surface: #ffffff;
+        --color-success: #0f9d67;
+        --color-danger: var(--rojo);
+        --color-warning: #b8860b;
+        --color-muted: #64748b;
+        --color-border: #e2e6e9;
+        --radius: 14px;
+        --radius-sm: 9px;
+        --shadow-sm: 0 1px 2px rgba(15,32,56,.06);
+        --shadow: 0 2px 8px rgba(15,32,56,.06), 0 8px 28px rgba(15,32,56,.07);
+        --shadow-lg: 0 20px 60px rgba(15,32,56,.22);
+        --ease: cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+        background:
+            radial-gradient(1200px 500px at 100% -10%, rgba(16,87,136,.10), transparent),
+            radial-gradient(900px 400px at -10% 10%, rgba(229,17,72,.05), transparent),
+            var(--color-bg);
+        font-family: 'Nunito Sans', system-ui, -apple-system, sans-serif;
+        color: var(--azul-oscuro);
+        margin: 0;
+        min-height: 100vh;
+    }
+
+    svg.icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; display: block; }
+    svg.icon.sm { width: 14px; height: 14px; }
+    svg.icon.lg { width: 26px; height: 26px; }
+
+    .brand-bar {
+        background: linear-gradient(120deg, var(--azul-oscuro) 0%, var(--azul-oscuro-2) 55%, var(--azul-medio) 130%);
+        padding: 0.8rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .brand-bar::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(229,17,72,.55), transparent);
+        width: 140px; height: 3px; top: auto; bottom: 0; left: -140px;
+        animation: sweep 5s ease-in-out infinite;
+    }
+    @keyframes sweep { 0%{left:-140px} 55%{left:110%} 100%{left:110%} }
+    .brand-logo-mark {
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        background: var(--rojo);
+        display: flex; align-items: center; justify-content: center;
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(229,17,72,.45);
+        flex-shrink: 0;
+    }
+    .brand-title { color: #fff; font-weight: 800; font-size: 0.95rem; letter-spacing: .2px; }
+    .brand-sub { color: #b9c6d6; font-size: .72rem; font-weight: 600; }
+
+    .page-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0.5rem 0.5rem 3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: -.3px;
+        color: var(--azul-oscuro);
+        margin-bottom: .2rem;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        padding: 0 0.5rem;
+    }
+    .page-sub {
+        font-size: .85rem;
+        color: var(--color-muted);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        padding: 0 0.5rem;
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 0.5rem;
+        align-items: start;
+        padding: 0 0.5rem;
+    }
+
+    .card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        opacity: 0;
+        transform: translateY(10px);
+        animation: rise .55s var(--ease) forwards;
+    }
+    .card:nth-child(2) { animation-delay: .08s; }
+    @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+    .card-header-custom {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+    .icon-wrap {
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+        display: flex; align-items: center; justify-content: center;
+        color: #fff;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(16,87,136,.35);
+    }
+    .icon-wrap.rojo { background: linear-gradient(135deg, var(--rojo), var(--rojo-dark)); box-shadow: 0 4px 12px rgba(229,17,72,.35); }
+    .card-header-custom .title { font-weight: 800; font-size: .9rem; color: var(--azul-oscuro); }
+    .card-header-custom .sub   { font-size: .72rem; color: var(--color-muted); font-weight: 600; }
+    .card-body-custom { padding: 0.5rem 0.5rem; }
+
+    .paste-area {
+        width: 100%;
+        min-height: 300px;
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 0.75rem 0.85rem;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: .8rem;
+        line-height: 1.5;
+        color: #33455c;
+        background: #fbfcfd;
+        resize: vertical;
+        transition: border-color .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+        outline: none;
+        display: block;
+    }
+    .paste-area:focus {
+        border-color: var(--azul-medio);
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(16,87,136,.10);
+    }
+    .paste-area.has-content { border-style: solid; border-color: #9fd0c8; }
+
+    .parsed-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+    }
+
+    .parsed-field {
+        background: #fbfcfd;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 0.4rem 0.5rem;
+        position: relative;
+        transition: transform .15s var(--ease), box-shadow .15s var(--ease);
+        animation: pop .3s var(--ease) backwards;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .parsed-field:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    @keyframes pop { from { opacity:0; transform: scale(.94);} to {opacity:1; transform: scale(1);} }
+    .parsed-field.field-ok { border-color: #a9dcd0; background: #f2fbf8; }
+    .parsed-field.field-skip { border-color: var(--color-border); opacity: .5; }
+
+    .pf-label {
+        font-size: .6rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        color: var(--color-muted);
+        margin-bottom: .1rem;
+    }
+    .pf-value {
+        font-size: .8rem;
+        font-weight: 700;
+        color: var(--azul-oscuro);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pf-badge {
+        position: absolute; top: 0.3rem; right: 0.3rem;
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: var(--color-success);
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .btn-load-files {
+        margin: 0.5rem 0.5rem 0;
+        display: flex;
+        justify-content: center;
+    }
+    .btn-load-files button {
+        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: .7rem 2rem;
+        font-size: .95rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(16,43,71,.35);
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        transition: transform .18s var(--ease), box-shadow .18s var(--ease), filter .18s;
+    }
+    .btn-load-files button:hover {
+        transform: translateY(-2px) scale(1.02);
+        filter: brightness(1.08);
+        box-shadow: 0 10px 24px rgba(16,43,71,.45);
+    }
+    .btn-load-files button > * { pointer-events: none; }
+
+    .tip {
+        font-size: .72rem;
+        color: var(--color-muted);
+        margin-top: .4rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+
+    .section-divider {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin: 1rem 0 0.8rem;
+    }
+    .section-divider span {
+        font-size: .7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--azul-medio);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+    .section-divider::before, .section-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--color-border), transparent);
+    }
+    .section-divider::before { background: linear-gradient(90deg, transparent, var(--color-border)); }
+
+    .alert-custom {
+        background: #fff2f5;
+        border: 1px solid #ffc4d3;
+        border-radius: var(--radius-sm);
+        padding: .5rem .8rem;
+        font-size: .78rem;
+        font-weight: 700;
+        color: var(--rojo-dark);
+        margin-top: .5rem;
+        display: flex; align-items: center; gap: .4rem;
+    }
+
+    .modal-backdrop-custom {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(15,32,56,.55);
+        z-index: 1040;
+        backdrop-filter: blur(3px);
+    }
+    .modal-backdrop-custom.show { display: block; animation: fadeIn .18s var(--ease); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-panel {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(.96);
+        width: min(680px, 95vw);
+        max-height: 92vh;
+        overflow-y: auto;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: var(--shadow-lg);
+        z-index: 1050;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .22s var(--ease), transform .22s var(--ease), visibility .22s;
+    }
+    .modal-panel.show {
+        opacity: 1; visibility: visible; pointer-events: auto;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    .modal-panel.wide { width: min(720px, 95vw); }
+
+    .modal-header-custom {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1rem 1.3rem;
+        border-bottom: 1px solid var(--color-border);
+        position: sticky; top: 0;
+        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-oscuro-2));
+        z-index: 1;
+        border-radius: 18px 18px 0 0;
+    }
+    .modal-title-custom { font-weight: 800; font-size: .95rem; color: #fff; display: flex; align-items: center; gap: .55rem; }
+    .modal-close {
+        background: rgba(255,255,255,.12); border: none;
+        width: 28px; height: 28px; border-radius: 8px;
+        cursor: pointer; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        transition: background .15s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,.24); }
+    .modal-body-custom { padding: 1rem 1.3rem; }
+    .modal-footer-custom {
+        padding: 0.8rem 1.3rem;
+        border-top: 1px solid var(--color-border);
+        display: flex; justify-content: flex-end; gap: .75rem;
+        position: sticky; bottom: 0;
+        background: #fff;
+    }
+
+    .form-group { margin-bottom: 0.8rem; }
+    .form-label-custom {
+        display: block; font-size: .72rem; font-weight: 800;
+        color: var(--azul-oscuro); margin-bottom: .25rem;
+        text-transform: uppercase; letter-spacing: .3px;
+    }
+    .form-input {
+        width: 100%;
+        border: 1.5px solid var(--color-border);
+        border-radius: 8px;
+        padding: .45rem .7rem;
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--azul-oscuro);
+        transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+        outline: none;
+        background: #fff;
+        display: block;
+    }
+    .form-input:focus { border-color: var(--azul-medio); box-shadow: 0 0 0 4px rgba(16,87,136,.1); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; }
+
+    .file-zone {
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 1.8rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color .2s var(--ease), background .2s var(--ease), transform .15s var(--ease);
+        display: block;
+        width: 100%;
+        user-select: none;
+        background: #fbfcfd;
+    }
+    .file-zone:hover { border-color: var(--azul-medio); background: #eef5fa; }
+    .file-zone.drag-over {
+        border-color: var(--rojo);
+        background: #fff2f5;
+        transform: scale(1.01);
+    }
+    .file-zone input[type="file"] { display: none; }
+    .file-zone > * { pointer-events: none; }
+    .file-zone-icon {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        margin: 0 auto .5rem;
+        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        transition: transform .25s var(--ease);
+    }
+    .file-zone:hover .file-zone-icon { transform: translateY(-3px) scale(1.04); }
+    .file-zone-title { font-weight: 800; font-size: .85rem; color: var(--azul-oscuro); }
+    .file-zone-sub { font-size: .7rem; color: var(--color-muted); margin-top: .2rem; font-weight: 600; }
+
+    .file-list { margin-top: .6rem; }
+    .file-row {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        background: #fbfcfd;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: .45rem .7rem;
+        margin-bottom: .4rem;
+        animation: pop .25s var(--ease) backwards;
+    }
+    .file-row-icon {
+        width: 28px; height: 28px;
+        border-radius: 7px;
+        background: var(--gris);
+        color: var(--azul-medio);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .file-name {
+        flex: 1;
+        font-size: .8rem;
+        font-weight: 700;
+        color: var(--azul-oscuro);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        pointer-events: none;
+    }
+    .file-type-select {
+        width: 160px;
+        flex-shrink: 0;
+        font-size: .74rem;
+        font-weight: 700;
+        border-radius: 7px;
+        border: 1px solid var(--color-border);
+        padding: .35rem .45rem;
+        cursor: pointer;
+        pointer-events: auto;
+        color: var(--azul-oscuro);
+        background: #fff;
+    }
+    .file-type-select.invalid { border-color: var(--rojo); box-shadow: 0 0 0 3px rgba(229,17,72,.12); }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--rojo), var(--rojo-dark));
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: .55rem 1.4rem;
+        font-size: .84rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform .15s var(--ease), box-shadow .15s var(--ease), filter .15s;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        box-shadow: 0 6px 16px rgba(229,17,72,.32);
+    }
+    .btn-primary-custom:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 10px 22px rgba(229,17,72,.4); }
+    .btn-primary-custom:active { transform: translateY(0); }
+    .btn-primary-custom > * { pointer-events: none; }
+
+    .btn-secondary-custom {
+        background: #fff;
+        color: var(--azul-oscuro);
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: .5rem 1.1rem;
+        font-size: .8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .15s var(--ease), border-color .15s var(--ease);
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .btn-secondary-custom:hover { background: var(--gris); border-color: var(--azul-medio); }
+    .btn-secondary-custom > * { pointer-events: none; }
+
+    .btn-ghost {
+        background: transparent;
+        border: 1.5px dashed #b8c3d6;
+        color: var(--azul-medio);
+        border-radius: var(--radius-sm);
+        padding: .45rem 1rem;
+        font-size: .8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .15s var(--ease), border-color .15s var(--ease);
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .btn-ghost:hover { background: #eef5fa; border-color: var(--azul-medio); }
+    .btn-ghost > * { pointer-events: none; }
+
+    .btn-icon-only {
+        width: 30px; height: 30px;
+        border-radius: 7px;
+        border: 1px solid var(--color-border);
+        background: #fff;
+        color: var(--azul-medio);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        transition: background .15s var(--ease), transform .15s var(--ease);
+        flex-shrink: 0;
+    }
+    .btn-icon-only:hover { background: var(--gris); transform: translateY(-1px); }
+
+    .fab {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: .6rem 1.3rem;
+        font-size: .8rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(16,43,71,.35);
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+        z-index: 999;
+    }
+    .fab:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 28px rgba(16,43,71,.45); }
+    .fab > * { pointer-events: none; }
+
+    .results-block { margin-top: 1.5rem; padding: 0 0.5rem; }
+
+    .result-row {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: .4rem;
+        overflow: hidden;
+        transition: box-shadow .2s var(--ease);
+        animation: rise .4s var(--ease) backwards;
+    }
+    .result-row:hover { box-shadow: var(--shadow); }
+
+    .result-row-head {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        padding: .65rem 0.9rem;
+        cursor: pointer;
+        user-select: none;
+    }
+    .result-row-icon {
+        width: 30px; height: 30px;
+        border-radius: 7px;
+        background: var(--gris);
+        color: var(--azul-medio);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .result-row-main { flex: 1; min-width: 0; }
+    .result-filename {
+        font-weight: 800; font-size: .84rem; color: var(--azul-oscuro);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .result-row-badges { display: flex; gap: .35rem; margin-top: .2rem; flex-wrap: wrap; }
+    .result-row-actions { display: flex; align-items: center; gap: .4rem; flex-shrink: 0; }
+
+    .chevron { transition: transform .25s var(--ease); color: var(--color-muted); }
+    .result-row.open .chevron { transform: rotate(180deg); }
+
+    .result-row-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height .35s var(--ease);
+    }
+    .result-row.open .result-row-body { max-height: 3000px; }
+
+    .result-body-inner {
+        padding: 0 0.9rem 1rem;
+        border-top: 1px solid var(--color-border);
+        padding-top: 0.8rem;
+    }
+
+    .result-section-title {
+        font-size: .68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--azul-medio);
+        margin-bottom: .4rem;
+        display: flex; align-items: center; gap: .3rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .25rem;
+        padding: .18rem .5rem;
+        border-radius: 99px;
+        font-size: .65rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .badge-ok        { background: #e3f8ef; color: #0f7a52; }
+    .badge-err       { background: #ffe4ea; color: var(--rojo-dark); }
+    .badge-warn      { background: #fdf1de; color: #93610a; }
+    .badge-miss      { background: var(--gris); color: #47535a; }
+    .badge-inconsist { background: #fef0d9; color: #8a5a05; }
+    .badge-info      { background: #dceefa; color: var(--azul-medio); }
+
+    .campo-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .6rem;
+        padding: .5rem 0;
+        border-bottom: 1px solid #f0f2f4;
+    }
+    .campo-row:last-child { border-bottom: none; }
+    .campo-label { font-size: .8rem; font-weight: 700; color: var(--azul-oscuro); }
+    .campo-valor { font-size: .74rem; color: var(--color-muted); margin-top: .1rem; font-weight: 600; }
+    .campo-msg   { font-size: .72rem; margin-top: .2rem; font-weight: 600; }
+    .campo-msg.err  { color: var(--color-danger); }
+    .campo-msg.warn { color: var(--color-warning); }
+
+    .cc-block {
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: .78rem;
+        background: #fbfcfd;
+        border-left: 3px solid var(--color-border);
+        padding: .4rem .6rem;
+        border-radius: 0 8px 8px 0;
+        margin-top: .3rem;
+        font-weight: 700;
+        color: var(--azul-oscuro);
+    }
+    .cc-block.cc-ok  { border-left-color: var(--color-success); }
+    .cc-block.cc-err { border-left-color: var(--rojo); }
+
+    .divider { border: none; border-top: 1px solid var(--color-border); margin: 0.8rem 0; }
+
+    @media (max-width: 900px) {
+        .main-grid { grid-template-columns: 1fr; }
+        .parsed-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+        .form-row, .form-row-3 { grid-template-columns: 1fr; }
+        .parsed-grid { grid-template-columns: 1fr; }
+        .brand-bar { padding: 0.6rem 1rem; }
+        .page-wrapper { padding: 0.3rem; }
+    }
+</style>
+</head>
+<body>
+
+<div class="brand-bar">
+    <div class="brand-logo-mark">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.6 0 3.1.42 4.4 1.15"/><path d="M21 5l-9 9"/></svg>
+    </div>
+    <div>
+        <div class="brand-title">Validación de Documentos</div>
+        <div class="brand-sub">Gestión documental — Recursos Humanos</div>
+    </div>
+</div>
+
+<button class="fab" id="fabButton" title="Completar campos manualmente" type="button">
+    <svg class="icon sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    <span>Editar campos</span>
+</button>
+
+<div class="modal-backdrop-custom" id="modalBackdrop"></div>
+
+<div class="modal-panel" id="modalPanel">
+    <div class="modal-header-custom">
+        <span class="modal-title-custom">
+            <svg class="icon sm" viewBox="0 0 24 24" style="stroke:#fff"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Completar campos manualmente
+        </span>
+        <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Cerrar modal">
+            <svg class="icon sm" viewBox="0 0 24 24" style="stroke:#fff"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+    </div>
+
+    <div class="modal-body-custom">
+        <p style="font-size:.78rem;color:var(--color-muted);margin-bottom:.8rem;font-weight:600;">
+            Los cambios que hagas aquí se reflejarán en el área de pegado y se usarán al validar.
+        </p>
+
+        <div class="form-row">
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label-custom" for="m_nombre">Nombre completo</label>
+                <input class="form-input" id="m_nombre" type="text" placeholder="JUAN PABLO GOMEZ OSORIO">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label-custom" for="m_documento">No. Identificación</label>
+                <input class="form-input" id="m_documento" type="text" placeholder="12345678">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_numero_contacto">Número de contacto</label>
+                <input class="form-input" id="m_numero_contacto" type="text" placeholder="3001234567">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label-custom" for="m_cargo">Cargo de la persona</label>
+                <input class="form-input" id="m_cargo" type="text" placeholder="Topógrafo">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_categoria_salarial">Categoría salarial</label>
+                <input class="form-input" id="m_categoria_salarial" type="text" placeholder="Ingeniero de Proyecto 10">
+            </div>
+        </div>
+
+        <div class="form-row-3">
+            <div class="form-group">
+                <label class="form-label-custom" for="m_salario_basico">Salario básico mensual</label>
+                <input class="form-input" id="m_salario_basico" type="text" placeholder="$ 4.151.984">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_beneficio_alimentacion">Beneficio alimentación</label>
+                <input class="form-input" id="m_beneficio_alimentacion" type="text" placeholder="$ 572.190">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_beneficio_pension">Beneficio pensión voluntaria</label>
+                <input class="form-input" id="m_beneficio_pension" type="text" placeholder="$ 24.162">
+            </div>
+        </div>
+
+        <div class="form-row-3">
+            <div class="form-group">
+                <label class="form-label-custom" for="m_auxilio_localizacion">Auxilio de localización</label>
+                <input class="form-input" id="m_auxilio_localizacion" type="text" placeholder="$ 1.187.084">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_auxilio_vivienda">Auxilio de vivienda</label>
+                <input class="form-input" id="m_auxilio_vivienda" type="text" placeholder="Otorgado en especie">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_condicion_descanso">Condición de descanso</label>
+                <input class="form-input" id="m_condicion_descanso" type="text" placeholder="35 x 7">
+            </div>
+        </div>
+
+        <div class="section-divider" style="margin-top:.5rem;"><span>Auxilios Adicionales (Documento Auxilio)</span></div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label-custom" for="m_ciudad">Ciudad de trabajo</label>
+                <input class="form-input" id="m_ciudad" type="text" placeholder="GUATEMALA">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_aux_almuerzo">Auxilio alimentación obra (diario)</label>
+                <input class="form-input" id="m_aux_almuerzo" type="text" placeholder="$ 25.000">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label-custom" for="m_aux_transporte">Auxilio transporte obra (diario)</label>
+                <input class="form-input" id="m_aux_transporte" type="text" placeholder="$ 15.000">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_aux_vivienda">Auxilio vivienda (mensual)</label>
+                <input class="form-input" id="m_aux_vivienda" type="text" placeholder="$ 800.000">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label-custom" for="m_tipo_contrato">Tipo de contrato</label>
+                <input class="form-input" id="m_tipo_contrato" type="text" placeholder="Obra Labor">
+            </div>
+            <div class="form-group">
+                <label class="form-label-custom" for="m_fecha_inicio">Fecha de inicio de labores</label>
+                <input class="form-input" id="m_fecha_inicio" type="date">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label-custom" for="m_aux_desplazamiento">Auxilio de Desplazamiento</label>
+                <input class="form-input" id="m_aux_desplazamiento" type="text" placeholder="$ 0">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label-custom" for="m_proyecto">Proyecto / Centro de costos</label>
+            <input class="form-input" id="m_proyecto" type="text" placeholder="30025 Lower Mine Aris Mining">
+        </div>
+    </div>
+
+    <div class="modal-footer-custom">
+        <button class="btn-secondary-custom" id="btnCancelar" type="button">
+            <span>Cancelar</span>
+        </button>
+        <button class="btn-primary-custom" id="btnAplicar" type="button">
+            <svg class="icon sm" viewBox="0 0 24 24" style="stroke:#fff"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>Aplicar campos</span>
+        </button>
+    </div>
+</div>
+
+<div class="modal-backdrop-custom" id="modalFilesBackdrop"></div>
+
+<div class="modal-panel wide" id="modalFilesPanel">
+    <div class="modal-header-custom">
+        <span class="modal-title-custom">
+            <svg class="icon sm" viewBox="0 0 24 24" style="stroke:#fff"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2Z"/></svg>
+            Cargar Archivos y Validar
+        </span>
+        <button class="modal-close" id="modalFilesCloseBtn" type="button" aria-label="Cerrar modal">
+            <svg class="icon sm" viewBox="0 0 24 24" style="stroke:#fff"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+    </div>
+
+    <div class="modal-body-custom">
+        <form method="POST" enctype="multipart/form-data" id="validationForm">
+            {% csrf_token %}
+
+            <input type="hidden" id="f_nombre"               name="nombre">
+            <input type="hidden" id="f_documento"            name="documento">
+            <input type="hidden" id="f_numero_contacto"      name="numero_contacto">
+            <input type="hidden" id="f_cargo"                name="cargo">
+            <input type="hidden" id="f_categoria_salarial"   name="categoria_salarial">
+            <input type="hidden" id="f_salario_basico"       name="salario_basico">
+            <input type="hidden" id="f_beneficio_alimentacion" name="beneficio_alimentacion">
+            <input type="hidden" id="f_beneficio_pension"    name="beneficio_pension">
+            <input type="hidden" id="f_auxilio_localizacion" name="auxilio_localizacion">
+            <input type="hidden" id="f_auxilio_vivienda"     name="auxilio_vivienda">
+            <input type="hidden" id="f_condicion_descanso"   name="condicion_descanso">
+            <input type="hidden" id="f_tipo_contrato"        name="tipo_contrato">
+            <input type="hidden" id="f_fecha_inicio"         name="fecha_inicio">
+            <input type="hidden" id="f_proyecto"             name="proyecto">
+            <input type="hidden" id="f_ciudad"          name="ciudad">
+            <input type="hidden" id="f_aux_almuerzo"    name="aux_almuerzo">
+            <input type="hidden" id="f_aux_transporte"  name="aux_transporte">
+            <input type="hidden" id="f_aux_vivienda"    name="aux_vivienda">
+            <input type="hidden" id="f_aux_desplazamiento" name="aux_desplazamiento">
+
+            <label class="file-zone" id="fileZone" for="inputArchivos">
+                <input type="file" id="inputArchivos" name="archivos" multiple accept=".pdf,.doc,.docx">
+                <div class="file-zone-icon">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                </div>
+                <div class="file-zone-title">Haz clic o arrastra archivos aquí</div>
+                <div class="file-zone-sub">PDF, DOC, DOCX</div>
+            </label>
+
+            <div class="file-list" id="fileList"></div>
+
+            {% if error_archivos %}
+            <div class="alert-custom">
+                <svg class="icon sm" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                {{ error_archivos }}
+            </div>
+            {% endif %}
+
+            <div style="margin-top:1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                <button type="submit" class="btn-primary-custom" id="btnValidar">
+                    <svg class="icon sm" viewBox="0 0 24 24" style="stroke:#fff"><path d="M20 6 9 17l-5-5"/></svg>
+                    <span>Validar documentos</span>
+                </button>
+                <button type="button" class="btn-ghost" id="btnLimpiar">
+                    <svg class="icon sm" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    <span>Limpiar todo</span>
+                </button>
+                <span id="statusMsg" style="font-size:.8rem;color:var(--color-muted);font-weight:700;"></span>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div class="page-wrapper">
+
+    <div class="page-title">Validación de Documentos</div>
+    <div class="page-sub">Pega el texto de la orden de contratación o edita los campos manualmente, luego carga los archivos y valida.</div>
+
+    <div class="main-grid">
+
+        <div class="card">
+            <div class="card-header-custom">
+                <div class="icon-wrap">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/><path d="M9 9h1"/></svg>
+                </div>
+                <div>
+                    <div class="title">Orden de contratación</div>
+                    <div class="sub">Pega el texto completo — los campos se reconocen automáticamente</div>
+                </div>
+            </div>
+            <div class="card-body-custom">
+                <textarea
+                    id="pasteArea"
+                    class="paste-area"
+                    placeholder="Pega aquí el texto de la orden de contratación…
+
+Ejemplo:
+Nombre:JUAN PABLO GOMEZ OSORIO
+No Identificación:2222222
+Cargo de la persona:Topografo
+Salario basico mensual: $ 4.151.984
+…"
+                ></textarea>
+                <p class="tip">
+                    <svg class="icon sm" viewBox="0 0 24 24" style="stroke:var(--azul-medio)"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    También puedes usar el botón <strong>Editar campos</strong> para completar los campos manualmente.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header-custom">
+                <div class="icon-wrap">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+                <div>
+                    <div class="title">Campos reconocidos</div>
+                    <div class="sub">Datos extraídos del texto pegado</div>
+                </div>
+            </div>
+            <div class="card-body-custom">
+                <div id="parsedPreview" style="display:none;">
+                    <div class="parsed-grid" id="parsedGrid"></div>
+                </div>
+                <p class="tip" id="parsedEmptyMsg" style="display:block;">
+                    Pega texto en el panel izquierdo para ver los campos reconocidos aquí.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="btn-load-files">
+        <button type="button" id="btnOpenFilesModal">
+            <svg class="icon sm" viewBox="0 0 24 24" style="stroke:#fff"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            Cargar Archivos y Validar
+        </button>
+    </div>
+
+    {% if resultados %}
+    <div class="results-block">
+        <div class="section-divider"><span>
+            <svg class="icon sm" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Resultados de validación
+        </span></div>
+
+        {% for resultado in resultados %}
+        <div class="result-row{% if resultados|length == 1 %} open{% endif %}" data-idx="{{ forloop.counter0 }}">
+            <div class="result-row-head" onclick="toggleResultRow(this.parentElement)">
+                <div class="result-row-icon">
+                    <svg class="icon sm" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+                </div>
+                <div class="result-row-main">
+                    <div class="result-filename">{{ resultado.archivo }}</div>
+                    <div class="result-row-badges">
+                        <span class="status-badge badge-info">{{ resultado.tipo_archivo }}</span>
+                        {% if resultado.tipo_riesgo == "OFICINA" %}
+                            <span class="status-badge badge-warn">
+                                <svg class="icon sm" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+                                Riesgo de Oficina
+                            </span>
+                        {% elif resultado.tipo_riesgo == "OBRA" %}
+                            <span class="status-badge badge-info">
+                                <svg class="icon sm" viewBox="0 0 24 24"><path d="M2 20h20"/><path d="M4 20V10l4-2 4 2 4-2 4 2v10"/></svg>
+                                Riesgo de Obra
+                            </span>
+                        {% endif %}
+                        {% if resultado.estado_general %}
+                            <span class="status-badge {% if resultado.estado_general.estado == 'CORRECTO' %}badge-ok{% else %}badge-err{% endif %}">
+                                {{ resultado.estado_general.mensaje }}
+                            </span>
+                        {% endif %}
+                        {% if resultado.documento.estado == "INCONSISTENCIA" %}
+                            <span class="status-badge badge-inconsist"><svg class="icon sm" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Inconsistencia en cédula</span>
+                        {% elif resultado.documento.estado == "NO_ENCONTRADO" %}
+                            <span class="status-badge badge-miss">— Cédula no encontrada</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="result-row-actions">
+                    <a href="{% if resultado.archivo_url %}{{ resultado.archivo_url }}{% else %}#{% endif %}"
+                       class="btn-icon-only" title="Descargar / ver archivo"
+                       onclick="event.stopPropagation();"
+                       {% if not resultado.archivo_url %}style="opacity:.4;pointer-events:none;"{% endif %}
+                       target="_blank" rel="noopener">
+                        <svg class="icon sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+                    </a>
+                    <div class="btn-icon-only chevron">
+                        <svg class="icon sm" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="result-row-body">
+                <div class="result-body-inner">
+
+                    <div class="result-section-title">
+                        <svg class="icon sm" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
+                        Nombre
+                    </div>
+                    {% if resultado.nombre.total_ocurrencias == 0 %}
+                        <p style="color:var(--color-danger);font-size:.8rem;font-weight:700;">El nombre no aparece en el documento.</p>
+                    {% elif resultado.nombre.con_errores > 0 %}
+                        {% for occ in resultado.nombre.ocurrencias %}
+                            {% if not occ.es_exacta %}
+                            <div class="cc-block cc-err">
+                                <strong>{{ occ.texto }}</strong>
+                                {% for det in occ.detalles %}
+                                    {% if det.estado == "ERROR" %}
+                                        <div style="color:#dc2626;margin-top:.2rem;font-size:.72rem;font-weight:600;">
+                                            "{{ det.palabra_usuario }}" aparece como "{{ det.encontrado }}"
+                                        </div>
+                                    {% elif det.estado == "FALTA" %}
+                                        <div style="color:#dc2626;margin-top:.2rem;font-size:.72rem;font-weight:600;">
+                                            Falta "{{ det.palabra_usuario }}"
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p style="color:var(--color-success);font-size:.8rem;font-weight:800;display:flex;align-items:center;gap:.4rem;">
+                            <svg class="icon sm" viewBox="0 0 24 24" style="stroke:var(--color-success)"><path d="M20 6 9 17l-5-5"/></svg>
+                            Nombre encontrado correctamente.
+                        </p>
+                    {% endif %}
+
+                    <hr class="divider">
+
+                    <div class="result-section-title">
+                        <svg class="icon sm" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v16"/></svg>
+                        Número de identificación
+                    </div>
+                    <p style="font-size:.8rem;margin-bottom:.3rem;font-weight:600;">{{ resultado.documento.mensaje }}</p>
+
+                    {% if resultado.documento.contextos_cc %}
+                        {% for ctx in resultado.documento.contextos_cc %}
+                            {% if not ctx.coincide %}
+                            <div class="cc-block cc-err">
+                                <strong>{{ ctx.etiqueta }} {{ ctx.numero_encontrado|default:"(sin número)" }}</strong>
+                                <span class="status-badge badge-err ms-2" style="font-size:.6rem;">✗ Diferente</span>
+                                {% if ctx.diferencia %}
+                                    <div style="color:var(--color-danger);font-size:.72rem;margin-top:.2rem;font-weight:600;">{{ ctx.diferencia }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% elif resultado.documento.ocurrencias %}
+                        {% for occ in resultado.documento.ocurrencias %}
+                            {% if not occ.es_exacto %}
+                            <div class="cc-block cc-err">
+                                <strong>{{ occ.numero }}</strong>
+                                <span class="status-badge badge-err ms-2" style="font-size:.6rem;">✗ Diferente</span>
+                                {% if occ.diferencia_detalle %}
+                                    <div style="color:var(--color-danger);font-size:.72rem;margin-top:.2rem;font-weight:600;">{{ occ.diferencia_detalle }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if resultado.campos %}
+                    <hr class="divider">
+                    <div class="result-section-title">
+                        <svg class="icon sm" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        Campos validados
+                    </div>
+                    {% for campo in resultado.campos %}
+                    <div class="campo-row">
+                        <div style="flex:1;">
+                            <div class="campo-label">{{ campo.label }}</div>
+                            <div class="campo-valor">Ingresado: {{ campo.valor_usuario }}</div>
+                            {% if campo.mensaje %}
+                                <div class="campo-msg {% if campo.estado == 'DIFERENTE' %}err{% else %}warn{% endif %}">
+                                    {{ campo.mensaje }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if campo.estado == 'CORRECTO' and campo.mensaje %}
+                                <span class="status-badge badge-warn">⚠ Revisar</span>
+                            {% elif campo.estado == 'CORRECTO' %}
+                                <span class="status-badge badge-ok">✓ Correcto</span>
+                            {% elif campo.estado == 'DIFERENTE' %}
+                                <span class="status-badge badge-err">✗ Diferente</span>
+                            {% elif campo.estado == 'NO_ENCONTRADO' %}
+                                <span class="status-badge badge-miss">— No encontrado</span>
+                            {% else %}
+                                <span class="status-badge badge-miss">—</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    const TIPOS_DOCUMENTOS = {{ tipos_documentos|safe }};
+
+    const FIELD_MAP = [
+        { patterns: ['nombre'],                                                        field: 'nombre' },
+        { patterns: ['no identificaci', 'número de identificaci', 'identificaci', 'cédula', 'cedula', 'documento'],   field: 'documento' },
+        { patterns: ['numero de contacto', 'número de contacto', 'teléfono', 'telefono', 'celular'],                  field: 'numero_contacto' },
+        { patterns: ['cargo de la persona', 'cargo'],                                  field: 'cargo' },
+        { patterns: ['categoria salarial', 'categoría salarial'],                      field: 'categoria_salarial' },
+        { patterns: ['salario basico mensual', 'salario básico mensual', 'salario mensual', 'salario'], field: 'salario_basico' },
+        { patterns: ['auxilio alimentacion obra', 'auxilio alimentación obra', 'aux almuerzo', 'aux_almuerzo'], field: 'aux_almuerzo' },
+        { patterns: ['beneficios de alimentación', 'beneficio alimentación', 'bono alimentaci'], field: 'beneficio_alimentacion' },
+        { patterns: ['beneficio pension voluntaria', 'pensión voluntaria', 'pension voluntaria'],       field: 'beneficio_pension' },
+        { patterns: ['auxilio de localización', 'auxilio localización', 'localización'],     field: 'auxilio_localizacion' },
+        { patterns: ['auxilio de vivienda', 'vivienda'],                               field: 'auxilio_vivienda' },
+        { patterns: ['condición de descanso', 'condicion de descanso', 'descanso'],    field: 'condicion_descanso' },
+        { patterns: ['tipo de contrato'],                                              field: 'tipo_contrato' },
+        { patterns: ['fecha de inicio de labores', 'fecha de inicio', 'fecha inicio'], field: 'fecha_inicio' },
+        { patterns: ['proyecto / centro de costos', 'proyecto/centro de costos', 'proyecto', 'centro de costos'], field: 'proyecto' },
+        { patterns: ['ciudad de trabajo', 'ciudad'],    field: 'ciudad' },
+        { patterns: ['auxilio transporte obra', 'aux transporte', 'aux_transporte'], field: 'aux_transporte' },
+        { patterns: ['auxilio vivienda', 'aux vivienda', 'aux_vivienda'], field: 'aux_vivienda' },
+        { patterns: ['auxilio de desplazamiento', 'aux desplazamiento', 'aux_desplazamiento'], field: 'aux_desplazamiento' },
+    ];
+
+    const FIELD_LABELS = {
+        nombre:                 'Nombre',
+        documento:              'No. Identificación',
+        numero_contacto:        'Número de contacto',
+        cargo:                  'Cargo',
+        categoria_salarial:     'Categoría salarial',
+        salario_basico:         'Salario básico',
+        beneficio_alimentacion: 'Beneficio alimentación',
+        beneficio_pension:      'Pensión voluntaria',
+        auxilio_localizacion:   'Auxilio localización',
+        auxilio_vivienda:       'Auxilio vivienda',
+        condicion_descanso:     'Condición descanso',
+        tipo_contrato:          'Tipo contrato',
+        fecha_inicio:           'Fecha inicio',
+        proyecto:               'Proyecto',
+        ciudad:         'Ciudad de trabajo',
+        aux_almuerzo:   'Auxilio alimentación obra',
+        aux_transporte: 'Auxilio transporte obra',
+        aux_vivienda:   'Auxilio vivienda',
+        aux_desplazamiento: 'Auxilio de Desplazamiento',
+    };
+
+    let parsedData = {};
+    let selectedFiles = [];
+
+    const INITIAL_DATA = JSON.parse('{{ initial_data_json|safe }}' || '{}');
+
+    function loadInitialData() {
+        if (Object.keys(INITIAL_DATA).length === 0) return;
+
+        for (const [key, value] of Object.entries(INITIAL_DATA)) {
+            const hiddenEl = document.getElementById('f_' + key);
+            const modalEl  = document.getElementById('m_' + key);
+            if (hiddenEl) hiddenEl.value = value || '';
+            if (modalEl)  modalEl.value  = value || '';
+        }
+
+        const lines = [];
+        for (const key of Object.keys(FIELD_LABELS)) {
+            const val = INITIAL_DATA[key];
+            if (val !== undefined && val !== null && val !== '') {
+                lines.push(`${FIELD_LABELS[key]}:${val}`);
+            }
+        }
+        const ta = document.getElementById('pasteArea');
+        ta.value = lines.join('\n');
+        ta.classList.toggle('has-content', lines.length > 0);
+
+        if (lines.length > 0) {
+            parsePaste(ta.value);
+        }
+    }
+
+    function normalize(str) {
+        return str.toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .trim();
+    }
+
+    function setStatus(msg, delay = 2500) {
+        const el = document.getElementById('statusMsg');
+        el.textContent = msg;
+        if (delay) setTimeout(() => { el.textContent = ''; }, delay);
+    }
+
+    function applyToHiddenFields(data) {
+        for (const key of Object.keys(FIELD_LABELS)) {
+            const el = document.getElementById('f_' + key);
+            if (el) el.value = data[key] || '';
+        }
+    }
+
+    function syncModalFromData(data) {
+        for (const key of Object.keys(FIELD_LABELS)) {
+            const el = document.getElementById('m_' + key);
+            if (el) el.value = data[key] || '';
+        }
+    }
+
+    function parsePaste(text) {
+        const lines = text.split('\n');
+        const newData = {};
+        const previewItems = [];
+
+        applyToHiddenFields({});
+        syncModalFromData({});
+
+        for (const line of lines) {
+            const colonIdx = line.indexOf(':');
+            if (colonIdx === -1) continue;
+
+            const rawKey = line.slice(0, colonIdx).trim();
+            const rawVal = line.slice(colonIdx + 1).trim();
+            const keyNorm = normalize(rawKey);
+
+            if (!rawVal || rawVal.toUpperCase() === 'N/A') {
+                previewItems.push({ label: rawKey, value: rawVal || '—', field: null, skip: true });
+                continue;
+            }
+
+            let matched = null;
+            for (const mapping of FIELD_MAP) {
+                if (mapping.patterns.some(p =>
+                    keyNorm.includes(normalize(p)) || normalize(p).includes(keyNorm)
+                )) {
+                    matched = mapping.field;
+                    break;
+                }
+            }
+
+            const val = rawVal.replace(/\s+/g, ' ').trim();
+
+            if (matched) {
+                newData[matched] = val;
+                previewItems.push({ label: rawKey, value: val, field: matched, skip: false });
+            } else {
+                previewItems.push({ label: rawKey, value: rawVal, field: null, skip: true });
+            }
+        }
+
+        parsedData = newData;
+        applyToHiddenFields(newData);
+        syncModalFromData(newData);
+        renderParsedPreview(previewItems, text.trim().length > 0);
+    }
+
+    function renderParsedPreview(items, show) {
+        const preview = document.getElementById('parsedPreview');
+        const grid    = document.getElementById('parsedGrid');
+        const emptyMsg = document.getElementById('parsedEmptyMsg');
+
+        if (!show || items.length === 0) {
+            preview.style.display = 'none';
+            if (emptyMsg) emptyMsg.style.display = 'block';
+            return;
+        }
+
+        preview.style.display = 'block';
+        if (emptyMsg) emptyMsg.style.display = 'none';
+        grid.innerHTML = '';
+
+        for (const item of items) {
+            if (item.skip && (!item.value || item.value === '—' || item.value.toUpperCase() === 'N/A')) continue;
+
+            const div = document.createElement('div');
+            div.className = 'parsed-field' + (item.field ? ' field-ok' : ' field-skip');
+
+            const label = document.createElement('div');
+            label.className = 'pf-label';
+            label.textContent = item.field ? (FIELD_LABELS[item.field] || item.label) : item.label;
+
+            const val = document.createElement('div');
+            val.className = 'pf-value';
+            val.textContent = item.value;
+            val.title = item.value;
+
+            if (item.field) {
+                const badge = document.createElement('span');
+                badge.className = 'pf-badge';
+                badge.innerHTML = '<svg class="icon sm" viewBox="0 0 24 24" style="stroke:#fff;width:10px;height:10px"><path d="M20 6 9 17l-5-5"/></svg>';
+                div.appendChild(badge);
+            }
+
+            div.appendChild(label);
+            div.appendChild(val);
+            grid.appendChild(div);
+        }
+    }
+
+    function openModal() {
+        for (const key of Object.keys(FIELD_LABELS)) {
+            const hidden = document.getElementById('f_' + key);
+            const modal  = document.getElementById('m_' + key);
+            if (hidden && modal) modal.value = hidden.value;
+        }
+        document.getElementById('modalBackdrop').classList.add('show');
+        document.getElementById('modalPanel').classList.add('show');
+        document.getElementById('m_nombre').focus();
+    }
+
+    function closeModal() {
+        document.getElementById('modalPanel').classList.remove('show');
+        document.getElementById('modalBackdrop').classList.remove('show');
+    }
+
+    function openFilesModal() {
+        document.getElementById('modalFilesBackdrop').classList.add('show');
+        document.getElementById('modalFilesPanel').classList.add('show');
+    }
+
+    function closeFilesModal() {
+        document.getElementById('modalFilesPanel').classList.remove('show');
+        document.getElementById('modalFilesBackdrop').classList.remove('show');
+    }
+
+    function applyModal() {
+        const newData = {};
+        for (const key of Object.keys(FIELD_LABELS)) {
+            const el = document.getElementById('m_' + key);
+            if (el && el.value.trim()) newData[key] = el.value.trim();
+        }
+        parsedData = { ...parsedData, ...newData };
+        applyToHiddenFields(parsedData);
+
+        const lines = Object.entries(parsedData).map(([k, v]) =>
+            `${FIELD_LABELS[k] || k}:${v}`
+        );
+        const ta = document.getElementById('pasteArea');
+        ta.value = lines.join('\n');
+        ta.classList.add('has-content');
+
+        closeModal();
+        setStatus('✓ Campos actualizados');
+    }
+
+    function autoDetectTipo(filename) {
+        const name = filename.toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]/g, ' ');
+
+        const patterns = {
+            'AUXILIO': /\bauxilio\b/,
+            'CONDICIONES': /\bcondicion(es)?\b/,
+            'CONTRATO': /\bcontrato\b/,
+            'MAN_CONF': /\bmanual\b|\bconfidencialidad\b|\bman\b.*\bconf\b/,
+            'MEDICAS': /\bmedic[ao]s?\b|\bexamen\b|\baptitud\b/,
+            'RIESGO': /\briesgo\b/
+        };
+
+        for (const [key, regex] of Object.entries(patterns)) {
+            if (regex.test(name)) return key;
+        }
+        return '';
+    }
+
+    function fileIconSvg(ext) {
+        if (ext === 'PDF') {
+            return '<svg class="icon sm" viewBox="0 0 24 24" style="stroke:#e51148"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>';
+        }
+        return '<svg class="icon sm" viewBox="0 0 24 24" style="stroke:#105788"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>';
+    }
+
+    function handleFiles(fileList) {
+        selectedFiles = Array.from(fileList);
+        renderFileList();
+    }
+
+    function renderFileList() {
+        const list = document.getElementById('fileList');
+        list.innerHTML = '';
+
+        selectedFiles.forEach((file, idx) => {
+            const ext = file.name.split('.').pop().toUpperCase();
+            const row = document.createElement('div');
+            row.className = 'file-row';
+
+            const icon = document.createElement('span');
+            icon.className = 'file-row-icon';
+            icon.innerHTML = fileIconSvg(ext);
+
+            const name = document.createElement('span');
+            name.className = 'file-name';
+            name.textContent = file.name;
+            name.title = file.name;
+
+            const sel = document.createElement('select');
+            sel.className = 'file-type-select';
+            sel.dataset.index = idx;
+            sel.innerHTML = '<option value="">— Tipo de doc —</option>';
+            Object.entries(TIPOS_DOCUMENTOS).forEach(([k, v]) => {
+                const opt = document.createElement('option');
+                opt.value = k;
+                opt.textContent = v;
+                sel.appendChild(opt);
+            });
+
+            const tipoDetectado = autoDetectTipo(file.name);
+            if (tipoDetectado && TIPOS_DOCUMENTOS[tipoDetectado]) {
+                sel.value = tipoDetectado;
+            }
+
+            row.appendChild(icon);
+            row.appendChild(name);
+            row.appendChild(sel);
+            list.appendChild(row);
+        });
+    }
+
+    function clearAll() {
+        const ta = document.getElementById('pasteArea');
+        ta.value = '';
+        ta.classList.remove('has-content');
+        document.getElementById('parsedPreview').style.display = 'none';
+        if (document.getElementById('parsedEmptyMsg')) document.getElementById('parsedEmptyMsg').style.display = 'block';
+        selectedFiles = [];
+        document.getElementById('fileList').innerHTML = '';
+        document.getElementById('inputArchivos').value = '';
+        for (const key of Object.keys(FIELD_LABELS)) {
+            const f = document.getElementById('f_' + key);
+            if (f) f.value = '';
+            const m = document.getElementById('m_' + key);
+            if (m) m.value = '';
+        }
+        parsedData = {};
+        setStatus('', 0);
+    }
+
+    function toggleResultRow(row) {
+        row.classList.toggle('open');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadInitialData();
+
+        document.getElementById('fabButton').addEventListener('click', openModal);
+        document.getElementById('modalBackdrop').addEventListener('click', closeModal);
+        document.getElementById('modalPanel').addEventListener('click', function (e) { e.stopPropagation(); });
+        document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+        document.getElementById('btnCancelar').addEventListener('click', closeModal);
+        document.getElementById('btnAplicar').addEventListener('click', applyModal);
+
+        document.getElementById('btnOpenFilesModal').addEventListener('click', openFilesModal);
+        document.getElementById('modalFilesBackdrop').addEventListener('click', closeFilesModal);
+        document.getElementById('modalFilesPanel').addEventListener('click', function (e) { e.stopPropagation(); });
+        document.getElementById('modalFilesCloseBtn').addEventListener('click', closeFilesModal);
+
+        document.getElementById('btnLimpiar').addEventListener('click', function() {
+            clearAll();
+            window.location.href = window.location.pathname + '?limpiar=1';
+        });
+
+        const pasteArea = document.getElementById('pasteArea');
+        pasteArea.addEventListener('input', function () {
+            this.classList.toggle('has-content', this.value.trim().length > 0);
+            parsePaste(this.value);
+        });
+
+        document.getElementById('inputArchivos').addEventListener('change', function () {
+            handleFiles(this.files);
+        });
+
+        const fileZone = document.getElementById('fileZone');
+        fileZone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        fileZone.addEventListener('dragleave', function () {
+            this.classList.remove('drag-over');
+        });
+        fileZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            const files = Array.from(e.dataTransfer.files).filter(f =>
+                f.name.match(/\.(pdf|doc|docx)$/i)
+            );
+            if (files.length) {
+                selectedFiles = files;
+                const dt = new DataTransfer();
+                files.forEach(f => dt.items.add(f));
+                document.getElementById('inputArchivos').files = dt.files;
+                renderFileList();
+            }
+        });
+
+        document.getElementById('validationForm').addEventListener('submit', function (e) {
+            const nombre = document.getElementById('f_nombre').value.trim();
+            const doc    = document.getElementById('f_documento').value.trim();
+
+            if (!nombre || !doc) {
+                e.preventDefault();
+                alert('⚠️ Faltan los campos obligatorios: Nombre y Número de identificación.\n\nPega el texto de la orden o usa ✏️ Editar campos.');
+                return;
+            }
+
+            if (selectedFiles.length === 0) {
+                e.preventDefault();
+                alert('⚠️ Debes adjuntar al menos un archivo para validar.');
+                return;
+            }
+
+            const selects = document.querySelectorAll('.file-type-select');
+            let valid = true;
+            selects.forEach(sel => {
+                if (!sel.value) {
+                    sel.classList.add('invalid');
+                    valid = false;
+                } else {
+                    sel.classList.remove('invalid');
+                }
+            });
+
+            if (!valid) {
+                e.preventDefault();
+                alert('⚠️ Asigna un tipo a cada archivo antes de validar.');
+                return;
+            }
+
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f));
+            document.getElementById('inputArchivos').files = dt.files;
+
+            this.querySelectorAll('input[name="tipo_archivo[]"]').forEach(el => el.remove());
+
+            selects.forEach(sel => {
+                const inp = document.createElement('input');
+                inp.type  = 'hidden';
+                inp.name  = 'tipo_archivo[]';
+                inp.value = sel.value;
+                this.appendChild(inp);
+            });
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('modalPanel').classList.contains('show')) {
+                    closeModal();
+                } else if (document.getElementById('modalFilesPanel').classList.contains('show')) {
+                    closeFilesModal();
+                }
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
