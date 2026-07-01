@@ -273,6 +273,7 @@ def validar_documentos(request):
 
     resultados     = []
     error_archivos = None
+    datos_para_mostrar = form_data_sesion  # valor por defecto (GET)
 
     if request.method == "POST":
         # Guardar todos los datos del POST en la sesión, preservando valores anteriores si el nuevo está vacío
@@ -285,6 +286,7 @@ def validar_documentos(request):
                 nuevos_datos[campo] = form_data_sesion.get(campo, "")
         request.session["form_data"] = nuevos_datos
         request.session.modified = True
+        datos_para_mostrar = nuevos_datos  # usar los datos ya combinados/actualizados
 
         form = ValidacionForm(request.POST)
 
@@ -434,7 +436,7 @@ def validar_documentos(request):
     else:
         form = ValidacionForm(initial=form_data_sesion)
 
-    initial_data_json = json.dumps(form_data_sesion, ensure_ascii=False)
+    initial_data_json = json.dumps(datos_para_mostrar, ensure_ascii=False)
 
     return render(
         request,
